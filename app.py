@@ -1,5 +1,3 @@
-%cd /content/Auto-Subtitle-Generator-Free
-
 import gradio as gr
 from subtitle import subtitle_maker,LANGUAGE_CODE
 source_lang_list = ['Automatic', "English", "Hindi", "Bengali"]
