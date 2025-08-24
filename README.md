@@ -1,9 +1,13 @@
-
 # 🎬 Auto Subtitle Generator (Free)
 
+**Run on Colab:**  
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/NeuralFalconYT/Auto-Subtitle-Generator-Free/blob/main/Subtitle_Generator.ipynb)
 
-Generate subtitles automatically from your videos or audio files using Whisper-Large-V3-Turbo-CT2 Model.  
+**Try the HuggingFace Demo:**  
+[![HuggingFace Space Demo](https://img.shields.io/badge/🤗-Space%20Demo-yellow)](https://huggingface.co/spaces/NeuralFalcon/Auto-Subtitle-Generator)
+
+Generate subtitles automatically from your videos or audio files using the **[Whisper-Large-V3-Turbo-CT2](https://huggingface.co/deepdml/faster-whisper-large-v3-turbo-ct2)** model.  
+
 
 **Reason to make this:**  
 When you try to generate captions for free, most editing software either charges money or imposes strict limitations, such as daily/monthly usage limits or short-duration restrictions.  
