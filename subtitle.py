@@ -501,13 +501,12 @@ def subtitle_maker(media_file, source_lang, target_lang):
         print(f"TRANSLATING from {detected_lang} to {target_lang}")
         original_subs = pysrt.open(default_srt, encoding='utf-8')
         translated_subs, _ = translate_subtitle(original_subs, detected_lang, target_lang)
-
-        translated_filename = os.path.basename(default_srt).replace(
-            f"_{detected_lang}.srt", f"_{target_lang}.srt"
-        )
+        base_name, ext = os.path.splitext(os.path.basename(default_srt))
+        translated_filename = f"{base_name}_to_{target_lang}{ext}"
         translated_srt_path = os.path.join(SUBTITLE_FOLDER, translated_filename)
         translated_subs.save(translated_srt_path, encoding='utf-8')
 
+    
     return (
         default_srt, translated_srt_path, custom_srt, word_srt,
         shorts_srt, txt_path, transcript
