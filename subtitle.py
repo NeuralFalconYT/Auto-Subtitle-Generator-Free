@@ -237,7 +237,8 @@ def whisper_subtitle(uploaded_file, source_language):
         os.remove(audio_file_path)
     del model
     gc.collect()
-    torch.cuda.empty_cache()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
     # 5. Prepare output file paths
     base_filename = os.path.splitext(os.path.basename(uploaded_file))[0][:30]
@@ -428,7 +429,7 @@ def write_subtitles_to_file(subtitles, filename="subtitles.srt"):
 def word_level_srt(words_timestamp, srt_path="word_level_subtitle.srt", shorts=False):
     """Generates an SRT file with one word per subtitle entry."""
     punctuation = re.compile(r'[.,!?;:"\–—_~^+*|]')
-    with open(srt_path, 'w', encoding='utf--8') as srt_file:
+    with open(srt_path, 'w', encoding='utf-8') as srt_file:
         for i, word_info in enumerate(words_timestamp, start=1):
             start = convert_time_to_srt_format(word_info['start'])
             end = convert_time_to_srt_format(word_info['end'])
