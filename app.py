@@ -27,7 +27,7 @@ def ui1():
                 upload_media = gr.File(label="Upload Audio or Video File")
                 input_lang = gr.Dropdown(label="Source Language", choices=source_lang_list, value="English")
                 generate_btn = gr.Button("🚀 Generate Subtitle", variant="primary")
-                with gr.Accordion("⚙️ Translation", open=False):
+                with gr.Accordion("⚙️ Translation using Google Translator", open=False):
                     output_lang = gr.Dropdown(label="Translate Into", choices=target_lang_list, value="English")
 
             with gr.Column():
@@ -186,7 +186,7 @@ def json_to_srt(json_script, srt_path):
 
 def ui2():
     with gr.Blocks() as demo:
-        gr.Markdown("## 🎬 Subtitle Translation Using LLM")
+        gr.Markdown("<center><h1 style='font-size: 32px;'>🎬 Subtitle Translation Using LLM</h1></center>")
 
         # hidden state to keep original srt path
         srt_state = gr.State("")
@@ -221,12 +221,12 @@ def ui2():
         generate_btn.click(
             fn=prompt_maker,
             inputs=[srt_file, language, task],
-            outputs=[output_prompt, srt_state],   # save both
+            outputs=[output_prompt, srt_state],   
         )
 
         convert_btn.click(
             fn=json_to_srt,
-            inputs=[json_input, srt_state],       # pass stored path
+            inputs=[json_input, srt_state],       
             outputs=srt_file_out,
         )
 
