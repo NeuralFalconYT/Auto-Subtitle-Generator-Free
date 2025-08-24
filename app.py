@@ -243,7 +243,7 @@ def main(share,debug):
 # def main(debug=True, share=True): 
   demo1 = ui1()
   demo2 = ui2()
-  demo = gr.TabbedInterface([demo1, demo2], ["Generate SRT File", "SRT Translation"], title="SRT Generator")
+  demo = gr.TabbedInterface([demo1, demo2], ["Generate SRT File", "SRT Translation"], title="")
   demo.queue().launch(share=share,debug=debug)
 if __name__ == "__main__":
     main()    
