@@ -7,3 +7,4 @@ deep_translator==1.11.4
 CTranslate2==4.5.0
 #ctranslate2==4.4.0
 #ctranslate2==3.24.0
+#ctranslate2==4.6.0
