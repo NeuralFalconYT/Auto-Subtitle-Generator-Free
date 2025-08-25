@@ -254,7 +254,7 @@ def whisper_subtitle(uploaded_file, source_language):
     word_level_srt(word_timestamps, srt_path=word_srt_path)
     write_sentence_srt(
         word_timestamps, output_file=shorts_srt_path, max_lines=1,
-        max_duration_s=3.0, max_chars_per_line=17
+        max_duration_s=2.0, max_chars_per_line=10
     )
     write_sentence_srt(
         word_timestamps, output_file=custom_srt_path, max_lines=2,
