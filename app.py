@@ -18,9 +18,13 @@ def update_target_lang(selected_src):
 
 def ui1():
     with gr.Blocks() as demo:
-        gr.Markdown("<center><h1 style='font-size: 32px;'>🎬 Auto Subtitle Generator</h1></center>")
-        gr.Markdown("**Note**: If you have a large video, upload the audio instead, it's much faster to upload.")
-
+        gr.HTML("""
+        <div style="text-align: center; margin: 20px auto; max-width: 800px;">
+            <h1 style="font-size: 2.5em; margin-bottom: 10px;">🎬 Auto Subtitle Generator</h1>
+            <p style="font-size: 1.2em; color: #555; margin-bottom: 15px;">If you have a large video, upload the audio instead, it's much faster to upload.</p>
+            <a href="https://github.com/NeuralFalconYT/Auto-Subtitle-Generator-Free" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: #4285F4; color: white; border-radius: 6px; text-decoration: none; font-size: 1em;">😇 Run on Google Colab</a>
+        </div>
+        """)
 
         with gr.Row():
             with gr.Column():
@@ -240,7 +244,9 @@ def ui2():
                 generate_btn = gr.Button("Generate Prompt")
                 output_prompt = gr.Textbox(
                     label="Copy & Paste this prompt in  https://aistudio.google.com/",
-                    lines=20
+                    lines=20,
+                    show_copy_button=True
+                    
                 )
 
             with gr.Column():
@@ -279,7 +285,8 @@ def main(share,debug):
 # def main(debug=True, share=True): 
   demo1 = ui1()
   demo2 = ui2()
-  demo = gr.TabbedInterface([demo1, demo2], ["Generate SRT File", "SRT Translation"], title="")
+  custom_css = """.gradio-container { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif; }"""
+  demo = gr.TabbedInterface([demo1, demo2], ["Generate SRT File", "SRT Translation"], title="",theme=gr.themes.Soft(),css=custom_css)
   demo.queue().launch(share=share,debug=debug)
 if __name__ == "__main__":
     main()    
