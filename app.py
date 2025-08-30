@@ -43,12 +43,14 @@ def ui1():
                   translated_srt = gr.File(label="🌐 Translated Subtitles")
                   shorts_srt     = gr.File(label="📱 Shorts/Reels Subtitles")
                   transcript_txt = gr.File(label="📄 Full Transcript (Text File)")
-                  transcript_box = gr.Textbox(label="🗒️ Transcript Preview", lines=3)
+                  subtitle_json= gr.File(label="📄 Full Transcript (JSON File) To make .ass file")
+                  word_json= gr.File(label="📄 Shorts Transcript (JSON File) To make .ass file")
+                  transcript_box = gr.Textbox(label="🗒️ Transcript Preview", lines=4,show_copy_button=True)
 
         generate_btn.click(
             fn=subtitle_maker,
             inputs=[upload_media, input_lang, output_lang],
-            outputs=[default_srt, translated_srt, customized_srt, word_level_srt, shorts_srt, transcript_txt, transcript_box]
+            outputs=[default_srt, translated_srt, customized_srt, word_level_srt, shorts_srt, transcript_txt, subtitle_json,word_json,transcript_box]
         )
 
         input_lang.change(
