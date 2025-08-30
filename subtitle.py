@@ -252,11 +252,11 @@ def whisper_subtitle(uploaded_file, source_language):
     # 6. Generate all subtitle files
     generate_srt_from_sentences(sentence_timestamps, srt_path=clean_srt_path)
     word_level_srt(word_timestamps, srt_path=word_srt_path)
-    sentence_json=write_sentence_srt(
+    shorts_json=write_sentence_srt(
         word_timestamps, output_file=shorts_srt_path, max_lines=1,
         max_duration_s=2.0, max_chars_per_line=17
     )
-    word_json=write_sentence_srt(
+    sentence_json=write_sentence_srt(
         word_timestamps, output_file=custom_srt_path, max_lines=2,
         max_duration_s=7.0, max_chars_per_line=38
     )
@@ -266,7 +266,7 @@ def whisper_subtitle(uploaded_file, source_language):
 
     return (
         clean_srt_path, custom_srt_path, word_srt_path, shorts_srt_path,
-        txt_path, transcript_text, sentence_json,word_json,detected_language
+        txt_path, transcript_text, sentence_json,shorts_json,detected_language
     )
 
 
