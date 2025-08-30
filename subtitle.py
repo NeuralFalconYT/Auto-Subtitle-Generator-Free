@@ -252,11 +252,11 @@ def whisper_subtitle(uploaded_file, source_language):
     # 6. Generate all subtitle files
     generate_srt_from_sentences(sentence_timestamps, srt_path=clean_srt_path)
     word_level_srt(word_timestamps, srt_path=word_srt_path)
-    write_sentence_srt(
+    sentence_json=write_sentence_srt(
         word_timestamps, output_file=shorts_srt_path, max_lines=1,
-        max_duration_s=2.0, max_chars_per_line=10
+        max_duration_s=2.0, max_chars_per_line=17
     )
-    write_sentence_srt(
+    word_json=write_sentence_srt(
         word_timestamps, output_file=custom_srt_path, max_lines=2,
         max_duration_s=7.0, max_chars_per_line=38
     )
@@ -266,7 +266,7 @@ def whisper_subtitle(uploaded_file, source_language):
 
     return (
         clean_srt_path, custom_srt_path, word_srt_path, shorts_srt_path,
-        txt_path, transcript_text, detected_language
+        txt_path, transcript_text, sentence_json,word_json,detected_language
     )
 
 
@@ -343,12 +343,13 @@ def merge_punctuation_glitches(subtitles):
 
     return cleaned
 
+import json
 def write_sentence_srt(
     word_level_timestamps, output_file="subtitles_professional.srt", max_lines=2,
     max_duration_s=7.0, max_chars_per_line=38, hard_pause_threshold=0.5,
     merge_pause_threshold=0.4
 ):
-    """Creates professional-grade SRT files with smart line breaking and merging."""
+    """Creates professional-grade SRT files and a corresponding timestamp.json file."""
     if not word_level_timestamps:
         return
 
@@ -357,14 +358,20 @@ def write_sentence_srt(
     i = 0
     while i < len(word_level_timestamps):
         start_time = word_level_timestamps[i]["start"]
-        current_words = []
+        
+        # We'll now store the full word objects, not just the text
+        current_word_objects = []
+        
         j = i
         while j < len(word_level_timestamps):
             entry = word_level_timestamps[j]
-            potential_text = " ".join(current_words + [entry["word"]])
+            
+            # Create potential text from the word objects
+            potential_words = [w["word"] for w in current_word_objects] + [entry["word"]]
+            potential_text = " ".join(potential_words)
 
             if len(split_line_by_char_limit(potential_text, max_chars_per_line)) > max_lines: break
-            if (entry["end"] - start_time) > max_duration_s and current_words: break
+            if (entry["end"] - start_time) > max_duration_s and current_word_objects: break
 
             if j > i:
                 prev_entry = word_level_timestamps[j-1]
@@ -372,16 +379,24 @@ def write_sentence_srt(
                 if pause >= hard_pause_threshold: break
                 if prev_entry["word"].endswith(('.','!','?')): break
 
-            current_words.append(entry["word"])
+            # Append the full word object
+            current_word_objects.append(entry)
             j += 1
 
-        if not current_words:
-            current_words.append(word_level_timestamps[i]["word"])
+        if not current_word_objects:
+            current_word_objects.append(word_level_timestamps[i])
             j = i + 1
 
-        text = " ".join(current_words)
+        text = " ".join([w["word"] for w in current_word_objects])
         end_time = word_level_timestamps[j - 1]["end"]
-        draft_subtitles.append({ "start": start_time, "end": end_time, "text": text })
+        
+        # Include the list of word objects in our draft subtitle
+        draft_subtitles.append({
+            "start": start_time,
+            "end": end_time,
+            "text": text,
+            "words": current_word_objects
+        })
         i = j
 
     # Phase 2: Post-process to merge single-word "orphan" subtitles
@@ -398,20 +413,61 @@ def write_sentence_srt(
             if len(split_line_by_char_limit(merged_text, max_chars_per_line)) <= max_lines:
                 prev_sub["text"] = merged_text
                 prev_sub["end"] = current_sub["end"]
+                
+                # Merge the word-level data as well
+                prev_sub["words"].extend(current_sub["words"])
                 continue
 
         final_subtitles.append(current_sub)
 
     final_subtitles = merge_punctuation_glitches(final_subtitles)
-
-    # Phase 3: Write the final SRT file
+    print(final_subtitles)
+    # ==============================================================================
+    # NEW CODE BLOCK: Generate JSON data and write files
+    # ==============================================================================
+    
+    # This dictionary will hold the data for our JSON file
+    timestamps_data = {}
+    
+    # Phase 3: Write the final SRT file (and prepare JSON data)
     with open(output_file, "w", encoding="utf-8") as f:
         for idx, sub in enumerate(final_subtitles, start=1):
+            # --- SRT Writing (Unchanged) ---
             text = sub["text"].replace(" ,", ",").replace(" .", ".")
             formatted_lines = split_line_by_char_limit(text, max_chars_per_line)
+            start_time_str = convert_time_to_srt_format(sub['start'])
+            end_time_str = convert_time_to_srt_format(sub['end'])
+            
             f.write(f"{idx}\n")
-            f.write(f"{convert_time_to_srt_format(sub['start'])} --> {convert_time_to_srt_format(sub['end'])}\n")
+            f.write(f"{start_time_str} --> {end_time_str}\n")
             f.write("\n".join(formatted_lines) + "\n\n")
+            
+            # --- JSON Data Population (New) ---
+            # Create the list of word dictionaries for the current subtitle
+            word_data = []
+            for word_obj in sub["words"]:
+                word_data.append({
+                    "word": word_obj["word"],
+                    "start": convert_time_to_srt_format(word_obj["start"]),
+                    "end": convert_time_to_srt_format(word_obj["end"])
+                })
+            
+            # Add the complete entry to our main dictionary
+            timestamps_data[str(idx)] = {
+                "text": "\n".join(formatted_lines),
+                "start": start_time_str,
+                "end": end_time_str,
+                "words": word_data
+            }
+
+    # Write the collected data to the JSON file
+    json_output_file = output_file.replace(".srt",".json")
+    with open(json_output_file, "w", encoding="utf-8") as f_json:
+        json.dump(timestamps_data, f_json, indent=4, ensure_ascii=False)
+        
+    print(f"Successfully generated SRT file: {output_file}")
+    print(f"Successfully generated JSON file: {json_output_file}")
+    return json_output_file
 
 def write_subtitles_to_file(subtitles, filename="subtitles.srt"):
     """Writes a dictionary of subtitles to a standard SRT file."""
@@ -487,14 +543,15 @@ def subtitle_maker(media_file, source_lang, target_lang):
     Returns:
         A tuple containing paths to all generated files and the transcript text.
     """
+
     try:
         (
             default_srt, custom_srt, word_srt, shorts_srt,
-            txt_path, transcript, detected_lang
+            txt_path, transcript, sentence_json,word_json,detected_lang
         ) = whisper_subtitle(media_file, source_lang)
     except Exception as e:
         print(f"❌ An error occurred during transcription: {e}")
-        return (None, None, None, None, None, None, f"Error: {e}")
+        return (None, None, None, None, None, None,None,None, f"Error: {e}")
 
     translated_srt_path = None
     if detected_lang and detected_lang != target_lang:
@@ -509,7 +566,7 @@ def subtitle_maker(media_file, source_lang, target_lang):
     
     return (
         default_srt, translated_srt_path, custom_srt, word_srt,
-        shorts_srt, txt_path, transcript
+        shorts_srt, txt_path,sentence_json,word_json, transcript
     )
 
 
@@ -526,7 +583,7 @@ os.makedirs(TEMP_FOLDER, exist_ok=True)
 # source_lang = "English"
 # target_lang = "English"
 
-# default_srt, translated_srt, custom_srt, word_srt, shorts_srt, txt_path, transcript = subtitle_maker(
+#   default_srt, translated_srt_path, custom_srt, word_srt, shorts_srt, txt_path,sentence_json,word_json, transcript= subtitle_maker(
 #     media_file, source_lang, target_lang
 # )
 # If source_lang and target_lang are the same, translation will be skipped.
@@ -539,6 +596,7 @@ os.makedirs(TEMP_FOLDER, exist_ok=True)
 # word_srt         -> Word-level timestamps (useful for creating YouTube Shorts/Reels)
 # shorts_srt       -> Optimized subtitles for vertical videos (displays 3–4 words at a time , Maximum 17 characters per segment.)
 # txt_path         -> Full transcript as plain text (useful for video summarization or for asking questions about the video or audio data with other LLM tools)
+# sentence_json,word_json --> To Generate .ass file later
 # transcript       -> Transcript text directly returned by the function, if you just need the transcript
 
 # All functionality is contained in a single file, making it portable 
