@@ -4,7 +4,7 @@ gradio>=5.9.1
 click>=8.1.7
 pysrt>=1.1.2
 deep_translator==1.11.4
-CTranslate2==4.5.0
+CTranslate2==4.5.0 #for colab
 #ctranslate2==4.4.0
 #ctranslate2==3.24.0
 #ctranslate2==4.6.0
